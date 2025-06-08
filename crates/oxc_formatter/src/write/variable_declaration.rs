@@ -20,18 +20,12 @@ use super::FormatWrite;
 impl<'a> FormatWrite<'a> for AstNode<'a, '_, VariableDeclaration<'a>> {
     fn write(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let semicolon = match self.parent {
-            AstNodes::ForStatementInit(_) => false,
+            AstNodes::ForStatementInit(_) | AstNodes::ExportNamedDeclaration(_) => false,
             // TODO: It would be better if there is a AstNodes which is `left` of `ForInStatement` and `ForOfStatement`.
             AstNodes::ForInStatement(stmt) => stmt.left().span() != self.span(),
             AstNodes::ForOfStatement(stmt) => stmt.left().span() != self.span(),
             _ => true,
         };
-        !matches!(
-            self.parent,
-            AstNodes::ForStatementInit(_)
-                | AstNodes::ForInStatement(_)
-                | AstNodes::ForOfStatement(_)
-        );
 
         write!(
             f,

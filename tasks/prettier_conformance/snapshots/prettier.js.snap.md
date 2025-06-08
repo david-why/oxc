@@ -241,7 +241,7 @@ js compatibility: 293/699 (41.92%)
 | js/last-argument-expansion/issue-10708.js | 💥 | 15.38% |
 | js/last-argument-expansion/issue-7518.js | 💥 | 10.00% |
 | js/last-argument-expansion/jsx.js | 💥 | 16.67% |
-| js/last-argument-expansion/object.js | 💥 | 60.00% |
+| js/last-argument-expansion/object.js | 💥 | 65.00% |
 | js/last-argument-expansion/overflow.js | 💥 | 75.27% |
 | js/line-suffix-boundary/boundary.js | 💥 | 31.11% |
 | js/logical-assignment/logical-assignment.js | 💥 | 81.48% |
@@ -310,7 +310,7 @@ js compatibility: 293/699 (41.92%)
 | js/sequence-expression/ignore.js | 💥 | 0.00% |
 | js/sequence-expression/parenthesized.js | 💥 | 0.00% |
 | js/spread/spread.js | 💥 | 80.00% |
-| js/strings/escaped.js | 💥💥 | 40.00% |
+| js/strings/escaped.js | 💥💥 | 50.00% |
 | js/strings/multiline-literal.js | 💥💥 | 70.00% |
 | js/strings/strings.js | 💥💥 | 83.72% |
 | js/strings/template-literals.js | 💥💥 | 52.24% |

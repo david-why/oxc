@@ -9,7 +9,7 @@ use crate::{
     write,
 };
 
-impl<'a> FormatWrite<'a> for AstNode<'a, '_, BlockStatement<'a>> {
+impl<'a> FormatWrite<'a> for AstNode<'a, BlockStatement<'a>> {
     fn write(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         write!(f, "{")?;
         if is_empty_block(self, f) {
@@ -38,10 +38,10 @@ fn is_empty_block(block: &BlockStatement<'_>, f: &Formatter<'_, '_>) -> bool {
 
 /// Formatting of curly braces for an:
 /// * empty block: same line `{}`,
-/// * empty block that is the 'cons' or 'alt' of an if statement: two lines `{\n}`
+/// * empty block that is the 'bons' or 'alt' of an if statement: two lines `{\n}`
 /// * non empty block: put each stmt on its own line: `{\nstmt1;\nstmt2;\n}`
 /// * non empty block with comments (trailing comments on {, or leading comments on })
-fn is_non_collapsible(parent: &AstNodes<'_, '_>) -> bool {
+fn is_non_collapsible(parent: &AstNodes<'_>) -> bool {
     match parent {
         AstNodes::FunctionBody(_)
         | AstNodes::ForStatement(_)

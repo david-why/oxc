@@ -11,7 +11,7 @@ use crate::{
 
 /// Utility function to print array-like nodes (array expressions, array bindings and assignment patterns)
 pub fn write_array_node<'a>(
-    node: &AstNode<'a, '_, Vec<'a, ArrayExpressionElement<'a>>>,
+    node: &AstNode<'a, Vec<'a, ArrayExpressionElement<'a>>>,
     f: &mut Formatter<'_, 'a>,
 ) -> FormatResult<()> {
     let trailing_separator = FormatTrailingCommas::ES5.trailing_separator(f.options());

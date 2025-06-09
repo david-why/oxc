@@ -26,15 +26,15 @@ impl<'a> Format<'a> for MaybeOptionalSemicolon {
     }
 }
 
-pub struct ClassPropertySemicolon<'a, 'b, 'c> {
-    element: &'c AstNode<'a, 'b, ClassElement<'a>>,
-    next_element: Option<&'c AstNode<'a, 'b, ClassElement<'a>>>,
+pub struct ClassPropertySemicolon<'a, 'b> {
+    element: &'b AstNode<'a, ClassElement<'a>>,
+    next_element: Option<&'b AstNode<'a, ClassElement<'a>>>,
 }
 
-impl<'a, 'b, 'c> ClassPropertySemicolon<'a, 'b, 'c> {
+impl<'a, 'b> ClassPropertySemicolon<'a, 'b> {
     pub fn new(
-        element: &'c AstNode<'a, 'b, ClassElement<'a>>,
-        next_element: Option<&'c AstNode<'a, 'b, ClassElement<'a>>>,
+        element: &'b AstNode<'a, ClassElement<'a>>,
+        next_element: Option<&'b AstNode<'a, ClassElement<'a>>>,
     ) -> Self {
         Self { element, next_element }
     }
@@ -65,7 +65,7 @@ impl<'a, 'b, 'c> ClassPropertySemicolon<'a, 'b, 'c> {
     }
 }
 
-impl<'a> Format<'a> for ClassPropertySemicolon<'a, '_, '_> {
+impl<'a> Format<'a> for ClassPropertySemicolon<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         if matches!(
             self.element.as_ref(),

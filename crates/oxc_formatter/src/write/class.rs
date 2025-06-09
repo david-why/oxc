@@ -14,7 +14,7 @@ use super::{
     type_parameters::{FormatTsTypeParameters, FormatTsTypeParametersOptions},
 };
 
-impl<'a> FormatWrite<'a> for AstNode<'a, '_, Class<'a>> {
+impl<'a> FormatWrite<'a> for AstNode<'a, Class<'a>> {
     fn write(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let decorators = self.decorators();
         let id = self.id();

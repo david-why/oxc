@@ -14,18 +14,18 @@ pub struct FormatArrayExpressionOptions {
     pub is_force_flat_mode: bool,
 }
 
-pub struct FormatArrayExpression<'a, 'b, 'c> {
-    array: &'c AstNode<'a, 'b, ArrayExpression<'a>>,
+pub struct FormatArrayExpression<'a, 'b> {
+    array: &'b AstNode<'a, ArrayExpression<'a>>,
     options: FormatArrayExpressionOptions,
 }
 
-impl<'a, 'b, 'c> FormatArrayExpression<'a, 'b, 'c> {
-    pub fn new(array: &'c AstNode<'a, 'b, ArrayExpression<'a>>) -> Self {
+impl<'a, 'b> FormatArrayExpression<'a, 'b> {
+    pub fn new(array: &'b AstNode<'a, ArrayExpression<'a>>) -> Self {
         Self { array, options: FormatArrayExpressionOptions::default() }
     }
 }
 
-impl<'a> Format<'a> for FormatArrayExpression<'a, '_, '_> {
+impl<'a> Format<'a> for FormatArrayExpression<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         write!(f, "[")?;
 

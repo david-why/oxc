@@ -8,21 +8,21 @@ use crate::{
     options::{FormatTrailingCommas, TrailingSeparator},
 };
 
-pub struct AssignmentTargetPropertyList<'a, 'b, 'c> {
-    properties: &'c AstNode<'a, 'b, Vec<'a, AssignmentTargetProperty<'a>>>,
-    rest: Option<&'c AstNode<'a, 'b, AssignmentTargetRest<'a>>>,
+pub struct AssignmentTargetPropertyList<'a, 'b> {
+    properties: &'b AstNode<'a, Vec<'a, AssignmentTargetProperty<'a>>>,
+    rest: Option<&'b AstNode<'a, AssignmentTargetRest<'a>>>,
 }
 
-impl<'a, 'b, 'c> AssignmentTargetPropertyList<'a, 'b, 'c> {
+impl<'a, 'b> AssignmentTargetPropertyList<'a, 'b> {
     pub fn new(
-        properties: &'c AstNode<'a, 'b, Vec<'a, AssignmentTargetProperty<'a>>>,
-        rest: Option<&'c AstNode<'a, 'b, AssignmentTargetRest<'a>>>,
+        properties: &'b AstNode<'a, Vec<'a, AssignmentTargetProperty<'a>>>,
+        rest: Option<&'b AstNode<'a, AssignmentTargetRest<'a>>>,
     ) -> Self {
         Self { properties, rest }
     }
 }
 
-impl<'a> Format<'a> for AssignmentTargetPropertyList<'a, '_, '_> {
+impl<'a> Format<'a> for AssignmentTargetPropertyList<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let has_trailing_rest = self.rest.is_some();
         let trailing_separator = if has_trailing_rest {

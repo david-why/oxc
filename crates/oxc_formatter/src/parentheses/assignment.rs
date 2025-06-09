@@ -13,7 +13,7 @@ use crate::{
 
 use super::NeedsParentheses;
 
-impl<'a> NeedsParentheses<'a> for AstNode<'a, '_, SimpleAssignmentTarget<'a>> {
+impl<'a> NeedsParentheses<'a> for AstNode<'a, SimpleAssignmentTarget<'a>> {
     fn needs_parentheses(&self, stack: &Formatter<'_, 'a>) -> bool {
         false
     }

@@ -31,7 +31,7 @@ use super::{
     },
 };
 
-impl<'a> Format<'a> for AstNode<'a, '_, Vec<'a, Argument<'a>>> {
+impl<'a> Format<'a> for AstNode<'a, Vec<'a, Argument<'a>>> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let l_paren_token = "(";
         let r_paren_token = ")";
@@ -125,10 +125,10 @@ impl<'a> Format<'a> for AstNode<'a, '_, Vec<'a, Argument<'a>>> {
 }
 
 /// Helper for formatting a call argument
-pub enum FormatCallArgument<'a, 'b, 'c> {
+pub enum FormatCallArgument<'a, 'b> {
     /// Argument that has not been inspected if its formatted content breaks.
     Default {
-        element: &'c AstNode<'a, 'b, Argument<'a>>,
+        element: &'b AstNode<'a, Argument<'a>>,
 
         /// Whether this is the last element.
         is_last: bool,
@@ -145,14 +145,14 @@ pub enum FormatCallArgument<'a, 'b, 'c> {
         content: FormatResult<Option<FormatElement>>,
 
         /// The separated element
-        element: &'c AstNode<'a, 'b, Argument<'a>>,
+        element: &'b AstNode<'a, Argument<'a>>,
 
         /// The lines before this element
         leading_lines: usize,
     },
 }
 
-impl<'a, 'b> FormatCallArgument<'a, 'b, '_> {
+impl<'a> FormatCallArgument<'a, '_> {
     /// Returns `true` if this argument contains any content that forces a group to [`break`](FormatElements::will_break).
     fn will_break(&mut self, f: &mut Formatter<'_, 'a>) -> bool {
         match &self {
@@ -248,14 +248,14 @@ impl<'a, 'b> FormatCallArgument<'a, 'b, '_> {
     }
 
     /// Returns an argument.
-    fn element(&self) -> &AstNode<'a, 'b, Argument<'a>> {
+    fn element(&self) -> &AstNode<'a, Argument<'a>> {
         match self {
             Self::Inspected { element, .. } | Self::Default { element, .. } => element,
         }
     }
 }
 
-impl<'a> Format<'a> for FormatCallArgument<'a, '_, '_> {
+impl<'a> Format<'a> for FormatCallArgument<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         self.fmt_with_cache_mode(FunctionBodyCacheMode::default(), f)
     }
@@ -300,13 +300,13 @@ pub fn is_function_composition_args(args: &[Argument<'_>]) -> bool {
     false
 }
 
-pub struct FormatAllArgsBrokenOut<'a, 'b, 'c> {
-    pub args: &'c [FormatCallArgument<'a, 'b, 'c>],
+pub struct FormatAllArgsBrokenOut<'a, 'b> {
+    pub args: &'b [FormatCallArgument<'a, 'b>],
     pub expand: bool,
-    pub node: &'c AstNode<'a, 'b, Vec<'a, Argument<'a>>>,
+    pub node: &'b AstNode<'a, Vec<'a, Argument<'a>>>,
 }
 
-impl<'a> Format<'a> for FormatAllArgsBrokenOut<'a, '_, '_> {
+impl<'a> Format<'a> for FormatAllArgsBrokenOut<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         // let is_inside_import = self.node.parent::<JsImportCallExpression>().is_some();
         let is_inside_import = false;
@@ -631,9 +631,9 @@ fn can_group_expression_argument(
     }
 }
 
-fn write_grouped_arguments<'a, 'b, 'c>(
-    call_arguments: &'c AstNode<'a, 'b, Vec<'a, Argument<'a>>>,
-    mut arguments: std::vec::Vec<FormatCallArgument<'a, 'b, 'c>>,
+fn write_grouped_arguments<'a, 'b>(
+    call_arguments: &'b AstNode<'a, Vec<'a, Argument<'a>>>,
+    mut arguments: std::vec::Vec<FormatCallArgument<'a, 'b>>,
     group_layout: GroupedCallArgumentLayout,
     f: &mut Formatter<'_, 'a>,
 ) -> FormatResult<()> {
@@ -818,8 +818,8 @@ fn write_grouped_arguments<'a, 'b, 'c>(
 }
 
 /// Helper for formatting a grouped call argument (see [should_group_first_argument] and [should_group_last_argument]).
-struct FormatGroupedArgument<'a, 'b, 'c> {
-    argument: &'c FormatCallArgument<'a, 'b, 'c>,
+struct FormatGroupedArgument<'a, 'b> {
+    argument: &'b FormatCallArgument<'a, 'b>,
 
     /// Whether this argument is the only argument in the argument list.
     single_argument_list: bool,
@@ -828,7 +828,7 @@ struct FormatGroupedArgument<'a, 'b, 'c> {
     layout: Option<GroupedCallArgumentLayout>,
 }
 
-impl<'a> Format<'a> for FormatGroupedArgument<'a, '_, '_> {
+impl<'a> Format<'a> for FormatGroupedArgument<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         match self.layout {
             Some(GroupedCallArgumentLayout::GroupedFirstArgument) => FormatGroupedFirstArgument {
@@ -847,14 +847,14 @@ impl<'a> Format<'a> for FormatGroupedArgument<'a, '_, '_> {
 }
 
 /// Helper for formatting the first grouped argument (see [should_group_first_argument]).
-struct FormatGroupedFirstArgument<'a, 'b, 'c> {
-    argument: &'c FormatCallArgument<'a, 'b, 'c>,
+struct FormatGroupedFirstArgument<'a, 'b> {
+    argument: &'b FormatCallArgument<'a, 'b>,
 
     /// Whether this is the only argument in the argument list.
     is_only: bool,
 }
 
-impl<'a> Format<'a> for FormatGroupedFirstArgument<'a, '_, '_> {
+impl<'a> Format<'a> for FormatGroupedFirstArgument<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let element = self.argument.element();
 
@@ -884,14 +884,14 @@ impl<'a> Format<'a> for FormatGroupedFirstArgument<'a, '_, '_> {
 }
 
 /// Helper for formatting the last grouped argument (see [should_group_last_argument]).
-struct FormatGroupedLastArgument<'a, 'b, 'c> {
+struct FormatGroupedLastArgument<'a, 'b> {
     /// The argument to format
-    argument: &'c FormatCallArgument<'a, 'b, 'c>,
+    argument: &'b FormatCallArgument<'a, 'b>,
     /// Is this the only argument in the arguments list
     is_only: bool,
 }
 
-impl<'a> Format<'a> for FormatGroupedLastArgument<'a, '_, '_> {
+impl<'a> Format<'a> for FormatGroupedLastArgument<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let element = self.argument.element();
 
@@ -990,7 +990,7 @@ fn is_simple_parameter(parameter: &FormalParameter<'_>, allow_type_annotations: 
 /// or amd's [`define`](https://github.com/amdjs/amdjs-api/wiki/AMD#define-function-) function.
 fn is_commonjs_or_amd_call(
     arguments: &[Argument<'_>],
-    call: &AstNode<'_, '_, CallExpression<'_>>,
+    call: &AstNode<'_, CallExpression<'_>>,
 ) -> bool {
     let Expression::Identifier(ident) = &call.callee else {
         return false;

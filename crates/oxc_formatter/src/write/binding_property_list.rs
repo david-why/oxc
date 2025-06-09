@@ -7,21 +7,21 @@ use crate::{
     options::{FormatTrailingCommas, TrailingSeparator},
 };
 
-pub struct BindingPropertyList<'a, 'b, 'c> {
-    properties: &'c AstNode<'a, 'b, Vec<'a, BindingProperty<'a>>>,
-    rest: Option<&'c AstNode<'a, 'b, BindingRestElement<'a>>>,
+pub struct BindingPropertyList<'a, 'b> {
+    properties: &'b AstNode<'a, Vec<'a, BindingProperty<'a>>>,
+    rest: Option<&'b AstNode<'a, BindingRestElement<'a>>>,
 }
 
-impl<'a, 'b, 'c> BindingPropertyList<'a, 'b, 'c> {
+impl<'a, 'b> BindingPropertyList<'a, 'b> {
     pub fn new(
-        properties: &'c AstNode<'a, 'b, Vec<'a, BindingProperty<'a>>>,
-        rest: Option<&'c AstNode<'a, 'b, BindingRestElement<'a>>>,
+        properties: &'b AstNode<'a, Vec<'a, BindingProperty<'a>>>,
+        rest: Option<&'b AstNode<'a, BindingRestElement<'a>>>,
     ) -> Self {
         Self { properties, rest }
     }
 }
 
-impl<'a> Format<'a> for BindingPropertyList<'a, '_, '_> {
+impl<'a> Format<'a> for BindingPropertyList<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let has_trailing_rest = self.rest.is_some();
         let trailing_separator = if has_trailing_rest {

@@ -12,12 +12,12 @@ use crate::{
 };
 
 #[derive(Clone, Copy)]
-pub enum ObjectLike<'a, 'b, 'c> {
-    ObjectExpression(&'c AstNode<'a, 'b, ObjectExpression<'a>>),
-    TSTypeLiteral(&'c AstNode<'a, 'b, TSTypeLiteral<'a>>),
+pub enum ObjectLike<'a, 'b> {
+    ObjectExpression(&'b AstNode<'a, ObjectExpression<'a>>),
+    TSTypeLiteral(&'b AstNode<'a, TSTypeLiteral<'a>>),
 }
 
-impl<'a> ObjectLike<'a, '_, '_> {
+impl<'a> ObjectLike<'a, '_> {
     fn members_have_leading_newline(&self, f: &Formatter<'_, 'a>) -> bool {
         // TODO: Polish the code
         match self {
@@ -49,7 +49,7 @@ impl<'a> ObjectLike<'a, '_, '_> {
     }
 }
 
-impl<'a> Format<'a> for ObjectLike<'a, '_, '_> {
+impl<'a> Format<'a> for ObjectLike<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let members = format_with(|f| self.write_members(f));
 

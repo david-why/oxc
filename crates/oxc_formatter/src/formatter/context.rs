@@ -56,7 +56,7 @@ impl<'ast> FormatContext<'ast> {
     /// See [JsFormatContext::cached_function_body] for more in depth documentation.
     pub(crate) fn get_cached_function_body(
         &self,
-        body: &AstNode<'ast, '_, FunctionBody<'ast>>,
+        body: &AstNode<'ast, FunctionBody<'ast>>,
     ) -> Option<FormatElement> {
         self.cached_function_body.as_ref().and_then(|(expected_body_span, formatted)| {
             if *expected_body_span == body.span() { Some(formatted.clone()) } else { None }
@@ -68,7 +68,7 @@ impl<'ast> FormatContext<'ast> {
     /// See [JsFormatContext::cached_function_body] for more in depth documentation.
     pub(crate) fn set_cached_function_body(
         &mut self,
-        body: &AstNode<'ast, '_, FunctionBody<'ast>>,
+        body: &AstNode<'ast, FunctionBody<'ast>>,
         formatted: FormatElement,
     ) {
         self.cached_function_body = Some((body.span(), formatted));

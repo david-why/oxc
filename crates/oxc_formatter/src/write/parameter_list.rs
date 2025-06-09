@@ -7,12 +7,12 @@ use crate::{
     options::{FormatTrailingCommas, TrailingSeparator},
 };
 
-enum Parameter<'a, 'b, 'c> {
-    FormalParameter(&'c AstNode<'a, 'b, FormalParameter<'a>>),
-    Rest(&'c AstNode<'a, 'b, BindingRestElement<'a>>),
+enum Parameter<'a, 'b> {
+    FormalParameter(&'b AstNode<'a, FormalParameter<'a>>),
+    Rest(&'b AstNode<'a, BindingRestElement<'a>>),
 }
 
-impl GetSpan for Parameter<'_, '_, '_> {
+impl GetSpan for Parameter<'_, '_> {
     fn span(&self) -> Span {
         match self {
             Self::FormalParameter(param) => param.span(),
@@ -21,7 +21,7 @@ impl GetSpan for Parameter<'_, '_, '_> {
     }
 }
 
-impl<'a> Format<'a> for Parameter<'a, '_, '_> {
+impl<'a> Format<'a> for Parameter<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         match self {
             Self::FormalParameter(param) => param.fmt(f),
@@ -30,21 +30,19 @@ impl<'a> Format<'a> for Parameter<'a, '_, '_> {
     }
 }
 
-struct FormalParametersIter<'a, 'b, 'c> {
-    params: AstNodeIterator<'a, 'b, FormalParameter<'a>>,
-    rest: Option<&'c AstNode<'a, 'b, BindingRestElement<'a>>>,
+struct FormalParametersIter<'a, 'b> {
+    params: AstNodeIterator<'a, FormalParameter<'a>>,
+    rest: Option<&'b AstNode<'a, BindingRestElement<'a>>>,
 }
 
-impl<'a, 'b, 'c> From<&'c AstNode<'a, 'b, FormalParameters<'a>>>
-    for FormalParametersIter<'a, 'b, 'c>
-{
-    fn from(value: &'c AstNode<'a, 'b, FormalParameters<'a>>) -> Self {
+impl<'a, 'b> From<&'b AstNode<'a, FormalParameters<'a>>> for FormalParametersIter<'a, 'b> {
+    fn from(value: &'b AstNode<'a, FormalParameters<'a>>) -> Self {
         Self { params: value.items().iter(), rest: value.rest() }
     }
 }
 
-impl<'a, 'b, 'c> Iterator for FormalParametersIter<'a, 'b, 'c> {
-    type Item = Parameter<'a, 'b, 'c>;
+impl<'a, 'b> Iterator for FormalParametersIter<'a, 'b> {
+    type Item = Parameter<'a, 'b>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.params
@@ -54,8 +52,8 @@ impl<'a, 'b, 'c> Iterator for FormalParametersIter<'a, 'b, 'c> {
     }
 }
 
-pub struct ParameterList<'a, 'b, 'c> {
-    list: &'c AstNode<'a, 'b, FormalParameters<'a>>,
+pub struct ParameterList<'a, 'b> {
+    list: &'b AstNode<'a, FormalParameters<'a>>,
     layout: Option<ParameterLayout>,
 }
 
@@ -92,16 +90,16 @@ pub enum ParameterLayout {
     Default,
 }
 
-impl<'a, 'b, 'c> ParameterList<'a, 'b, 'c> {
+impl<'a, 'b> ParameterList<'a, 'b> {
     pub fn with_layout(
-        list: &'c AstNode<'a, 'b, FormalParameters<'a>>,
+        list: &'b AstNode<'a, FormalParameters<'a>>,
         layout: ParameterLayout,
     ) -> Self {
         Self { list, layout: Some(layout) }
     }
 }
 
-impl<'a> Format<'a> for ParameterList<'a, '_, '_> {
+impl<'a> Format<'a> for ParameterList<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         match self.layout {
             None | Some(ParameterLayout::Default | ParameterLayout::NoParameters) => {

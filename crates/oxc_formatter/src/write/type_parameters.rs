@@ -12,7 +12,7 @@ use crate::{
     write,
 };
 
-impl<'a> Format<'a> for AstNode<'a, '_, Vec<'a, TSTypeParameter<'a>>> {
+impl<'a> Format<'a> for AstNode<'a, Vec<'a, TSTypeParameter<'a>>> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         // Type parameter lists of arrow function expressions have to include at least one comma
         // to avoid any ambiguity with JSX elements.
@@ -45,21 +45,21 @@ pub struct FormatTsTypeParametersOptions {
     pub is_type_or_interface_decl: bool,
 }
 
-pub struct FormatTsTypeParameters<'a, 'b, 'c> {
-    decl: &'c AstNode<'a, 'b, TSTypeParameterDeclaration<'a>>,
+pub struct FormatTsTypeParameters<'a, 'b> {
+    decl: &'b AstNode<'a, TSTypeParameterDeclaration<'a>>,
     options: FormatTsTypeParametersOptions,
 }
 
-impl<'a, 'b, 'c> FormatTsTypeParameters<'a, 'b, 'c> {
+impl<'a, 'b> FormatTsTypeParameters<'a, 'b> {
     pub fn new(
-        decl: &'c AstNode<'a, 'b, TSTypeParameterDeclaration<'a>>,
+        decl: &'b AstNode<'a, TSTypeParameterDeclaration<'a>>,
         options: FormatTsTypeParametersOptions,
     ) -> Self {
         Self { decl, options }
     }
 }
 
-impl<'a> Format<'a> for FormatTsTypeParameters<'a, '_, '_> {
+impl<'a> Format<'a> for FormatTsTypeParameters<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         if self.decl.params().is_empty() && self.options.is_type_or_interface_decl {
             write!(f, "<>")

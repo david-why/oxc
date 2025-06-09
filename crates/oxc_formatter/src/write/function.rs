@@ -8,7 +8,7 @@ use crate::{
     write,
 };
 
-impl<'a> FormatWrite<'a> for AstNode<'a, '_, Function<'a>> {
+impl<'a> FormatWrite<'a> for AstNode<'a, Function<'a>> {
     fn write(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         if self.r#async() {
             write!(f, ["async", space()]);
@@ -22,7 +22,7 @@ impl<'a> FormatWrite<'a> for AstNode<'a, '_, Function<'a>> {
     }
 }
 
-impl<'a> FormatWrite<'a> for AstNode<'a, '_, FunctionBody<'a>> {
+impl<'a> FormatWrite<'a> for AstNode<'a, FunctionBody<'a>> {
     fn write(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let statements = self.statements();
         let directives = self.directives();

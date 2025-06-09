@@ -49,7 +49,7 @@ impl Generator for FormatterFormatGenerator2 {
 
         let ast_nodes_variants = ast_nodes_names.iter().map(|(name, lifetime)| {
             quote! {
-                #name(&'a AstNode<'a, 'b, #name #lifetime>),
+                #name(&'a AstNode<'a, #name #lifetime>),
             }
         });
 
@@ -71,7 +71,7 @@ impl Generator for FormatterFormatGenerator2 {
 
         let transmute_self = quote! {
             #[inline]
-            fn transmute_self<'a, 'b, T>(s: &AstNode<'a, 'b, T>) -> &'a AstNode<'a, 'b, T> {
+            fn transmute_self<'a, T>(s: &AstNode<'a, T>) -> &'a AstNode<'a, T> {
                 /// * SAFETY: `s` is already allocated in Arena, so transmute from `&` to `&'a` is safe.
                 unsafe { transmute(s) }
             }
@@ -103,12 +103,12 @@ impl Generator for FormatterFormatGenerator2 {
             #transmute_self
 
             ///@@line_break
-            pub enum AstNodes<'a, 'b> {
+            pub enum AstNodes<'a> {
                 Dummy(),
                 #(#ast_nodes_variants)*
             }
 
-            impl <'a, 'b> AstNodes<'a, 'b> {
+            impl <'a> AstNodes<'a> {
                 #[inline]
                 pub fn span(&self) -> Span {
                     match self {
@@ -127,14 +127,14 @@ impl Generator for FormatterFormatGenerator2 {
             }
 
             ///@@line_break
-            pub struct AstNode<'a, 'b, T> {
-                inner: &'b T,
-                pub parent: &'a AstNodes<'a, 'b>,
+            pub struct AstNode<'a, T> {
+                inner: &'a T,
+                pub parent: &'a AstNodes<'a>,
                 allocator: &'a Allocator,
             }
 
             ///@@line_break
-            impl<'a, 'b, T> Deref for AstNode<'a, 'b, T> {
+            impl<'a, T> Deref for AstNode<'a, T> {
                 type Target = T;
 
                 fn deref(&self) -> &Self::Target {
@@ -142,22 +142,22 @@ impl Generator for FormatterFormatGenerator2 {
                 }
             }
 
-            impl<'a, 'b, T> AsRef<T> for AstNode<'a, 'b, T> {
+            impl<'a, T> AsRef<T> for AstNode<'a, T> {
                 fn as_ref(&self) -> &T {
                     self.inner
                 }
             }
 
             ///@@line_break
-            impl<'a,'b>  AstNode<'a, 'b, Program<'a>> {
-                pub fn new(inner: &'b Program<'a>, parent: &'a AstNodes<'a, 'b>, allocator: &'a Allocator) -> Self {
+            impl<'a>  AstNode<'a, Program<'a>> {
+                pub fn new(inner: &'a Program<'a>, parent: &'a AstNodes<'a>, allocator: &'a Allocator) -> Self {
                     AstNode { inner, parent, allocator }
                 }
             }
 
             ///@@line_break
-            impl<'a, 'b, T> AstNode<'a, 'b, Option<T>> {
-                pub fn as_ref(&self) -> Option<&'a AstNode<'a, 'b, T>> {
+            impl<'a, T> AstNode<'a, Option<T>> {
+                pub fn as_ref(&self) -> Option<&'a AstNode<'a, T>> {
                     self.allocator
                         .alloc(self.inner.as_ref().map(|inner| AstNode {
                             inner,
@@ -170,14 +170,14 @@ impl Generator for FormatterFormatGenerator2 {
 
 
             ///@@line_break
-            impl<'a, 'b, T> AstNode<'a, 'b, Vec<'a, T>> {
+            impl<'a, T> AstNode<'a, Vec<'a, T>> {
                 ///@@line_break
-                pub fn iter(&self) -> AstNodeIterator<'a, 'b, T> {
+                pub fn iter(&self) -> AstNodeIterator<'a, T> {
                     AstNodeIterator { inner: self.inner.iter(), parent: self.parent, allocator: self.allocator }
                 }
 
                 ///@@line_break
-                pub fn first(&self) -> Option<&'a AstNode<'a, 'b, T>> {
+                pub fn first(&self) -> Option<&'a AstNode<'a, T>> {
                     self.allocator
                         .alloc(self.inner.first().map(|inner| AstNode {
                             inner,
@@ -188,7 +188,7 @@ impl Generator for FormatterFormatGenerator2 {
                 }
 
                 ///@@line_break
-                pub fn last(&self) -> Option<&'a AstNode<'a, 'b, T>> {
+                pub fn last(&self) -> Option<&'a AstNode<'a, T>> {
                     self.allocator
                         .alloc(self.inner.last().map(|inner| AstNode {
                             inner,
@@ -201,15 +201,15 @@ impl Generator for FormatterFormatGenerator2 {
 
 
             ///@@line_break
-            pub struct AstNodeIterator<'a, 'b, T> {
-                inner: std::slice::Iter<'b, T>,
-                parent: &'a AstNodes<'a, 'b>,
+            pub struct AstNodeIterator<'a, T> {
+                inner: std::slice::Iter<'a, T>,
+                parent: &'a AstNodes<'a>,
                 allocator: &'a Allocator,
             }
 
             ///@@line_break
-            impl<'a, 'b, T> Iterator for AstNodeIterator<'a, 'b, T> {
-                type Item = &'a AstNode<'a, 'b, T>;
+            impl<'a, T> Iterator for AstNodeIterator<'a, T> {
+                type Item = &'a AstNode<'a, T>;
                 fn next(&mut self) -> Option<Self::Item> {
                     let allocator = self.allocator;
                     allocator
@@ -219,9 +219,9 @@ impl Generator for FormatterFormatGenerator2 {
             }
 
             ///@@line_break
-            impl<'a, 'b, T> IntoIterator for &AstNode<'a, 'b, Vec<'a, T>> {
-                type Item = &'a AstNode<'a, 'b, T>;
-                type IntoIter = AstNodeIterator<'a, 'b, T>;
+            impl<'a, T> IntoIterator for &AstNode<'a, Vec<'a, T>> {
+                type Item = &'a AstNode<'a, T>;
+                type IntoIter = AstNodeIterator<'a, T>;
                 fn into_iter(self) -> Self::IntoIter {
                     AstNodeIterator::<T> { inner: self.inner.iter(), parent: self.parent, allocator: self.allocator }
                 }
@@ -347,7 +347,7 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
             let return_type = if is_not_ast_node {
                 quote! { #reference_symbol #return_type }
             } else {
-                quote! { &AstNode<'a, 'b, #return_type> }
+                quote! { &AstNode<'a, #return_type> }
             };
 
             let return_type = if is_option {
@@ -366,7 +366,7 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
         }));
 
         return quote! {
-            impl<'a, 'b> AstNode<'a, 'b, #type_ty> {
+            impl<'a> AstNode<'a, #type_ty> {
                 #functions
             }
         };
@@ -458,14 +458,14 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
         match_arm
     });
 
-    let node_type = quote! { AstNode<'a, 'b, #type_ty> };
+    let node_type = quote! { AstNode<'a, #type_ty> };
 
     // Enum
     let as_ast_nodes_fn = quote! {
         ///@@line_break
-        impl<'a, 'b> #node_type {
+        impl<'a> #node_type {
             #[inline]
-            pub fn as_ast_nodes(&self) -> &AstNodes<'a, 'b> {
+            pub fn as_ast_nodes(&self) -> &AstNodes<'a> {
                 #parent;
                 let node = match self.inner {
                     #(#variant_match_arms)*
@@ -505,7 +505,7 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
         let to_fn_ident = format_ident!("to_{inherits_snake_name}");
         let match_arm = quote! {
             it @ #match_ident!(#enum_ident) => {
-                self.allocator.alloc(AstNode::<'a, 'b, #inherits_inner_type> {
+                self.allocator.alloc(AstNode::<'a, #inherits_inner_type> {
                     inner: it.#to_fn_ident(),
                     parent,
                     allocator: self.allocator,
@@ -516,22 +516,8 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
         match_arm
     });
 
-    // let get_child_func = quote! {
-    //     ///@@line_break
-    //     impl<'a, 'b> #node_type{
-    //         fn get_child<T>(&self, inner: &'b T) -> Option<&AstNode<'a, 'b, T>> {
-    //             #parent;
-    //             self.allocator.alloc(AstNode {
-    //                 inner,
-    //                 parent,
-    //                 allocator: self.allocator,
-    //             })
-    //         }
-    //     }
-    // };
-
     let impl_format_write = quote! {
-        impl<'a, 'b> FormatWrite<'a> for #node_type {
+        impl<'a> FormatWrite<'a> for #node_type {
             #[inline]
             fn write(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
                 #parent;
@@ -544,7 +530,7 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
     };
 
     let impl_get_span = quote! {
-        impl<'a, 'b> GetSpan for #node_type {
+        impl<'a> GetSpan for #node_type {
             #[inline]
             fn span(&self) -> oxc_span::Span {
                 self.inner.span()
@@ -553,7 +539,6 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
     };
 
     quote! {
-        // #get_child_func
         #as_ast_nodes_fn
         #impl_format_write
         #impl_get_span

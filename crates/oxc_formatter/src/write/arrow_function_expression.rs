@@ -12,8 +12,8 @@ use crate::{
 };
 
 #[derive(Clone, Copy)]
-pub struct FormatJsArrowFunctionExpression<'a, 'b, 'c> {
-    arrow: &'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>,
+pub struct FormatJsArrowFunctionExpression<'a, 'b> {
+    arrow: &'b AstNode<'a, ArrowFunctionExpression<'a>>,
     options: FormatJsArrowFunctionExpressionOptions,
 }
 
@@ -159,20 +159,20 @@ pub enum FunctionBodyCacheMode {
     Cache,
 }
 
-impl<'a, 'b, 'c> FormatJsArrowFunctionExpression<'a, 'b, 'c> {
-    pub fn new(arrow: &'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>) -> Self {
+impl<'a, 'b> FormatJsArrowFunctionExpression<'a, 'b> {
+    pub fn new(arrow: &'b AstNode<'a, ArrowFunctionExpression<'a>>) -> Self {
         Self { arrow, options: FormatJsArrowFunctionExpressionOptions::default() }
     }
 
     pub fn new_with_options(
-        arrow: &'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>,
+        arrow: &'b AstNode<'a, ArrowFunctionExpression<'a>>,
         options: FormatJsArrowFunctionExpressionOptions,
     ) -> Self {
         Self { arrow, options }
     }
 }
 
-impl<'a> Format<'a> for FormatJsArrowFunctionExpression<'a, '_, '_> {
+impl<'a> Format<'a> for FormatJsArrowFunctionExpression<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let layout =
             ArrowFunctionLayout::for_arrow(self.arrow, f.context().comments(), self.options);
@@ -341,9 +341,9 @@ impl<'a> Format<'a> for FormatJsArrowFunctionExpression<'a, '_, '_> {
     }
 }
 
-enum ArrowFunctionLayout<'a, 'b, 'c> {
+enum ArrowFunctionLayout<'a, 'b> {
     /// Arrow function with a non-arrow function body
-    Single(&'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>),
+    Single(&'b AstNode<'a, ArrowFunctionExpression<'a>>),
 
     /// A chain of at least two arrow functions.
     ///
@@ -360,17 +360,17 @@ enum ArrowFunctionLayout<'a, 'b, 'c> {
     ///   (e) =>
     ///     f;
     /// ```
-    Chain(ArrowChain<'a, 'b, 'c>),
+    Chain(ArrowChain<'a, 'b>),
 }
 
-impl<'a, 'b, 'c> ArrowFunctionLayout<'a, 'b, 'c> {
+impl<'a, 'b> ArrowFunctionLayout<'a, 'b> {
     /// Determines the layout for the passed arrow function. See [ArrowFunctionLayout] for a description
     /// of the different layouts.
     fn for_arrow(
-        arrow: &'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>,
+        arrow: &'b AstNode<'a, ArrowFunctionExpression<'a>>,
         comments: &Comments,
         options: FormatJsArrowFunctionExpressionOptions,
-    ) -> ArrowFunctionLayout<'a, 'b, 'c> {
+    ) -> ArrowFunctionLayout<'a, 'b> {
         let mut head = None;
         let mut middle = Vec::new();
         let mut current = arrow;
@@ -456,16 +456,16 @@ impl<'a, 'b, 'c> ArrowFunctionLayout<'a, 'b, 'c> {
     }
 }
 
-struct ArrowChain<'a, 'b, 'c> {
+struct ArrowChain<'a, 'b> {
     /// The top most arrow function in the chain
-    head: &'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>,
+    head: &'b AstNode<'a, ArrowFunctionExpression<'a>>,
 
     /// The arrow functions in the chain that are neither the first nor the last.
     /// Empty for chains consisting only of two arrow functions.
-    middle: Vec<&'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>>,
+    middle: Vec<&'b AstNode<'a, ArrowFunctionExpression<'a>>>,
 
     /// The last arrow function in the chain
-    tail: &'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>,
+    tail: &'b AstNode<'a, ArrowFunctionExpression<'a>>,
 
     options: FormatJsArrowFunctionExpressionOptions,
 
@@ -473,15 +473,15 @@ struct ArrowChain<'a, 'b, 'c> {
     expand_signatures: bool,
 }
 
-impl<'a, 'b, 'c> ArrowChain<'a, 'b, 'c> {
+impl<'a, 'b> ArrowChain<'a, 'b> {
     /// Returns an iterator over all arrow functions in this chain
-    fn arrows(&self) -> impl Iterator<Item = &&'c AstNode<'a, 'b, ArrowFunctionExpression<'a>>> {
+    fn arrows(&self) -> impl Iterator<Item = &&'b AstNode<'a, ArrowFunctionExpression<'a>>> {
         use std::iter::once;
         once(&self.head).chain(self.middle.iter()).chain(once(&self.tail))
     }
 }
 
-impl<'a> Format<'a> for ArrowChain<'a, '_, '_> {
+impl<'a> Format<'a> for ArrowChain<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         let ArrowChain { tail, expand_signatures, .. } = self;
 
@@ -788,11 +788,11 @@ fn has_rest_object_or_array_parameter(params: &FormalParameters) -> bool {
 /// or return type annotation contain any content that forces a [*group to break](FormatElements::will_break).
 ///
 /// This error gets captured by FormatJsCallArguments.
-fn format_signature<'a, 'c>(
-    arrow: &'c AstNode<'a, '_, ArrowFunctionExpression<'a>>,
+fn format_signature<'a, 'b>(
+    arrow: &'b AstNode<'a, ArrowFunctionExpression<'a>>,
     is_first_or_last_call_argument: bool,
     is_first_in_chain: bool,
-) -> impl Format<'a> + 'c {
+) -> impl Format<'a> + 'b {
     format_with(move |f| {
         let formatted_async_token =
             format_with(|f| if arrow.r#async() { write!(f, ["async", space()]) } else { Ok(()) });
@@ -882,9 +882,9 @@ fn format_signature<'a, 'c>(
 }
 
 /// Formats a function body with additional caching depending on [`mode`](Self::mode).
-pub struct FormatMaybeCachedFunctionBody<'a, 'b, 'c> {
+pub struct FormatMaybeCachedFunctionBody<'a, 'b> {
     /// The body to format.
-    pub body: &'c AstNode<'a, 'b, FunctionBody<'a>>,
+    pub body: &'b AstNode<'a, FunctionBody<'a>>,
 
     /// Is the function body an arrow expression? i.e. `() => expr` instead of `() => {}`
     pub expression: bool,
@@ -893,7 +893,7 @@ pub struct FormatMaybeCachedFunctionBody<'a, 'b, 'c> {
     pub mode: FunctionBodyCacheMode,
 }
 
-impl<'a> FormatMaybeCachedFunctionBody<'a, '_, '_> {
+impl<'a> FormatMaybeCachedFunctionBody<'a, '_> {
     fn format(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         if self.expression {
             if let AstNodes::ExpressionStatement(s) =
@@ -906,7 +906,7 @@ impl<'a> FormatMaybeCachedFunctionBody<'a, '_, '_> {
     }
 }
 
-impl<'a> Format<'a> for FormatMaybeCachedFunctionBody<'a, '_, '_> {
+impl<'a> Format<'a> for FormatMaybeCachedFunctionBody<'a, '_> {
     fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
         match self.mode {
             FunctionBodyCacheMode::NoCache => self.format(f),

@@ -43,8 +43,6 @@ impl Generator for FormatterFormatGenerator {
             .collect::<TokenStream>();
 
         let output = quote! {
-            #![expect(clippy::elidable_lifetime_names)]
-
             use oxc_ast::{AstKind, ast::*};
 
             ///@@line_break
@@ -68,7 +66,7 @@ impl Generator for FormatterFormatGenerator {
 fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
     let type_ty = type_def.ty(schema);
     let type_ty = quote! {
-        AstNode::<'a, 'b, #type_ty>
+        AstNode::<'a, #type_ty>
     };
 
     let has_kind = match type_def {
@@ -80,7 +78,7 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
     if !has_kind {
         return quote! {
             ///@@line_break
-            impl<'a, 'b> Format<'a> for #type_ty {
+            impl<'a> Format<'a> for #type_ty {
                 fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
                     self.write(f)
                 }
@@ -147,7 +145,7 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
 
     quote! {
         ///@@line_break
-        impl<'a, 'b> Format<'a> for #type_ty {
+        impl<'a> Format<'a> for #type_ty {
             fn fmt(&self, f: &mut Formatter<'_, 'a>) -> FormatResult<()> {
                 #implementation
             }

@@ -212,7 +212,7 @@ impl Generator for FormatterFormatGenerator2 {
                 type Item = &'a AstNode<'a, 'b, T>;
                 fn next(&mut self) -> Option<Self::Item> {
                     let allocator = self.allocator;
-                    self.allocator
+                    allocator
                         .alloc(self.inner.next().map(|inner| AstNode { parent: self.parent, inner, allocator }))
                         .as_ref()
                 }
@@ -483,12 +483,12 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
             field_type.maybe_inner_type(schema).map_or_else(|| field_type.ident(), TypeDef::ident);
 
         Some(quote! {
-            #enum_ident::#variant_name(s) => {
-                AstNode::<'a, 'b, #node_type> {
-                    inner: s,
+            #enum_ident::#variant_name(inner) => {
+                self.allocator.alloc(AstNode::<#node_type> {
+                    inner,
                     parent,
                     allocator: self.allocator,
-                }.fmt(f)
+                }).fmt(f)
             },
         })
     });
@@ -505,11 +505,11 @@ fn implementation(type_def: &TypeDef, schema: &Schema) -> TokenStream {
         let to_fn_ident = format_ident!("to_{inherits_snake_name}");
         let match_arm = quote! {
             it @ #match_ident!(#enum_ident) => {
-                AstNode::<'a, 'b, #inherits_inner_type> {
+                self.allocator.alloc(AstNode::<'a, 'b, #inherits_inner_type> {
                     inner: it.#to_fn_ident(),
                     parent,
                     allocator: self.allocator,
-                }.fmt(f)
+                }).fmt(f)
             },
         };
 
